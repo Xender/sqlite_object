@@ -11,8 +11,25 @@ class SqliteSet(SqliteObject):
     __schema = '''CREATE TABLE IF NOT EXISTS set_table (key TEXT PRIMARY KEY)'''
     __index = '''CREATE INDEX IF NOT EXISTS set_index ON set_table (key)'''
 
-    def __init__(self, init_set = [], filename=None, coder=json.dumps, decoder=json.loads, index=True, persist=False, commit_every=0):
-        super(SqliteSet, self).__init__(self.__schema, self.__index, filename or str(uuid.uuid4())+".sqlite3", coder, decoder, index=index, persist=persist, commit_every=commit_every)
+    def __init__(self,
+        init_set=[],
+        filename=None,
+        coder=json.dumps,
+        decoder=json.loads,
+        index=True,
+        persist=False,
+        commit_every=0
+    ):
+        super(SqliteSet, self).__init__(
+            self.__schema,
+            self.__index,
+            filename or str(uuid.uuid4())+".sqlite3",
+            coder,
+            decoder,
+            index=index,
+            persist=persist,
+            commit_every=commit_every
+        )
 
         for item in init_set:
             self.add(item)

@@ -26,8 +26,25 @@ class SqliteDict(SqliteObject):
     __schema = '''CREATE TABLE IF NOT EXISTS dict (key TEXT PRIMARY KEY, value TEXT)'''
     __index = '''CREATE INDEX IF NOT EXISTS dict_index ON dict (key)'''
 
-    def __init__(self, init_dict={}, filename=None, coder=json.dumps, decoder=json.loads, index=True, persist=False, commit_every=0):
-        super(SqliteDict, self).__init__(self.__schema, self.__index, filename or str(uuid.uuid4())+".sqlite3", coder, decoder, index=index, persist=persist, commit_every=commit_every)
+    def __init__(self,
+    init_dict={},
+    filename=None,
+    coder=json.dumps,
+    decoder=json.loads,
+    index=True,
+    persist=False,
+    commit_every=0
+    ):
+        super(SqliteDict, self).__init__(
+            self.__schema,
+            self.__index,
+            filename or str(uuid.uuid4())+".sqlite3",
+            coder,
+            decoder,
+            index=index,
+            persist=persist,
+            commit_every=commit_every
+        )
 
         for key, value in init_dict.items():
             self[key] = value
