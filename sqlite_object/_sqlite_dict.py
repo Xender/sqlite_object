@@ -233,7 +233,7 @@ class SqliteDict(SqliteObject):
             try:
                 this = next(iterator)
             except StopIteration:
-                outfile.write("}")
+                outfile.write(u"}")
                 return
             else:
                 while True:
