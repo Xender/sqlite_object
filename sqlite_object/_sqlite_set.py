@@ -93,18 +93,18 @@ class SqliteSet(SqliteObject):
 
 
     def isdisjoint(self, other):
-        for item in self:
-            if item in other:
-                return False
+        return all(
+            (item not in other)
+            for item in self
+        )
 
-        return True
 
     def issubset(self, other):
-        for item in self:
-            if item not in other:
-                return False
+        return all(
+            (item in other)
+            for item in self
+        )
 
-        return True
 
     def __le__(self, other):
         return self.issubset(other)
@@ -113,11 +113,11 @@ class SqliteSet(SqliteObject):
         return self.issubset(other) and (len(self) < len(other))
 
     def issuperset(self, other):
-        for item in other:
-            if item not in self:
-                return False
+        return all(
+            (item in self)
+            for item in other
+        )
 
-        return True
 
     def __ge__(self, other):
         return self.issuperset(other)
@@ -126,14 +126,13 @@ class SqliteSet(SqliteObject):
         return self.issuperset(other) and (len(self) > len(other))
 
     def __eq__(self, other):
-        if len(self) == len(other):
-            for item in self:
-                if item not in other:
-                    return False
-            return True
-        else:
+        if len(self) != len(other):
             return False
 
+        return all(
+            (item in other)
+            for item in self
+        )
     def update(self, other):
         for item in other:
             self.add(item)
