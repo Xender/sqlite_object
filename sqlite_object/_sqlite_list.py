@@ -204,7 +204,7 @@ class SqliteList(SqliteObject):
                     raise IndexError("pop from empty list")
 
                 cursor.execute('''SELECT value FROM list WHERE list_index = (SELECT MAX(list_index) FROM list)''')
-                output = self._decoder(cursor.fetchone()[0])
+                output = self._decoder( cursor.fetchone()[0] )
                 cursor.execute('''DELETE FROM list WHERE list_index = (SELECT MAX(list_index) FROM list)''')
 
                 self._db.commit()
