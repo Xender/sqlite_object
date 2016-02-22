@@ -27,13 +27,13 @@ class SqliteDict(SqliteObject):
     __index = '''CREATE INDEX IF NOT EXISTS dict_index ON dict (key)'''
 
     def __init__(self,
-    init_dict={},
-    filename=None,
-    coder=json.dumps,
-    decoder=json.loads,
-    index=True,
-    persist=False,
-    commit_every=0
+        init_dict={},
+        filename=None,
+        coder=json.dumps,
+        decoder=json.loads,
+        index=True,
+        persist=False,
+        commit_every=0
     ):
         super(SqliteDict, self).__init__(
             self.__schema,
