@@ -217,10 +217,7 @@ class SqliteDict(SqliteObject):
             outfile.write(u"{")
             iterator = iter(self.items())
             try:
-                try:
-                    this = iterator.__next__()
-                except AttributeError:
-                    this = iterator.next()
+                this = next(iterator)
             except StopIteration:
                 outfile.write("}")
                 return
@@ -230,10 +227,7 @@ class SqliteDict(SqliteObject):
                     outfile.write(u":")
                     outfile.write(unicode(json.dumps(this[1])))
                     try:
-                        try:
-                            this = iterator.__next__()
-                        except AttributeError:
-                            this = iterator.next()
+                        this = next(iterator)
                     except StopIteration:
                         outfile.write(u"}")
                         break
@@ -244,10 +238,7 @@ class SqliteDict(SqliteObject):
         with self.lock:
             iterator = iter(self.items())
             try:
-                try:
-                    this = iterator.__next__()
-                except AttributeError:
-                    this = iterator.next()
+                this = next(iterator)
             except StopIteration:
                 return
             else:
@@ -257,9 +248,6 @@ class SqliteDict(SqliteObject):
                     outfile.write(unicode(value_coder(this[1])))
                     outfile.write(unicode(separator))
                     try:
-                        try:
-                            this = iterator.__next__()
-                        except AttributeError:
-                            this = iterator.next()
+                        this = next(iterator)
                     except StopIteration:
                         break

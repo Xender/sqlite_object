@@ -237,10 +237,7 @@ class SqliteList(SqliteObject):
             iterator = iter(self)
 
             try:
-                try:
-                    this = iterator.__next__()
-                except AttributeError:
-                    this = iterator.next()
+                this = next(iterator)
             except StopIteration:
                 outfile.write(u"]")
                 return
@@ -249,10 +246,7 @@ class SqliteList(SqliteObject):
                     outfile.write(unicode(json.dumps(this)))
 
                     try:
-                        try:
-                            this = iterator.__next__()
-                        except AttributeError:
-                            this = iterator.next()
+                        this = next(iterator)
                     except StopIteration:
                         outfile.write(u"]")
                         break
@@ -264,10 +258,7 @@ class SqliteList(SqliteObject):
             iterator = iter(self)
 
             try:
-                try:
-                    this = iterator.__next__()
-                except AttributeError:
-                    this = iterator.next()
+                this = next(iterator)
             except StopIteration:
                 return
             else:
@@ -276,9 +267,6 @@ class SqliteList(SqliteObject):
                     outfile.write(unicode(separator))
 
                     try:
-                        try:
-                            this = iterator.__next__()
-                        except AttributeError:
-                            this = iterator.next()
+                        this = next(iterator)
                     except StopIteration:
                         break
