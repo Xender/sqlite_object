@@ -3,9 +3,7 @@ import sqlite3, os
 from threading import RLock
 
 
-
 class SqliteObject(object):
-
     _commit_counter = 0
     lock = RLock()
 
@@ -16,12 +14,15 @@ class SqliteObject(object):
         self._db = sqlite3.connect(filename)
         self._persist = persist
         self._filename = filename
+
         with self.lock:
             with self._closeable_cursor() as cursor:
                 cursor.execute(schema)
                 if index:
                     cursor.execute(index_command)
+
                 self._db.commit()
+
         self._is_open = True
         self._coder = coder
         self._decoder = decoder
@@ -72,6 +73,7 @@ class SqliteObject(object):
 
         def __enter__(self):
             return self
+
         def __exit__(self, x,y,z):
             self.close()
 

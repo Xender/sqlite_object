@@ -6,17 +6,16 @@ try:
 except NameError:
     unicode = str
 
+
 class SqliteSet(SqliteObject):
     __schema = '''CREATE TABLE IF NOT EXISTS set_table (key TEXT PRIMARY KEY)'''
     __index = '''CREATE INDEX IF NOT EXISTS set_index ON set_table (key)'''
-
 
     def __init__(self, init_set = [], filename=None, coder=json.dumps, decoder=json.loads, index=True, persist=False, commit_every=0):
         super(SqliteSet, self).__init__(self.__schema, self.__index, filename or str(uuid.uuid4())+".sqlite3", coder, decoder, index=index, persist=persist, commit_every=commit_every)
 
         for item in init_set:
             self.add(item)
-
 
     def _getlen(self, cursor):
         for row in cursor.execute('''SELECT COUNT(*) FROM set_table'''):
@@ -61,30 +60,37 @@ class SqliteSet(SqliteObject):
         with self.lock:
             with self._closeable_cursor() as cursor:
                 self._add(cursor, item)
+
             self._do_write()
 
     def remove(self, item):
         with self.lock:
             with self._closeable_cursor() as cursor:
                 self._remove(cursor, item)
+
             self._do_write()
 
     def discard(self, item):
         with self.lock:
             with self._closeable_cursor() as cursor:
                 self._discard(cursor, item)
+
             self._do_write()
 
     def pop(self):
         out = None
+
         with self.lock:
             with self._closeable_cursor() as cursor:
                 rows = cursor.execute('''SELECT key FROM set_table LIMIT 1''')
                 row = rows.fetchone()
+
                 if row == None:
                     raise KeyError("Tried to pop empty set_table")
+
                 self._discard(cursor, self._decoder(row[0]))
                 out = self._decoder(row[0])
+
             self._do_write()
             return out
 
@@ -93,12 +99,14 @@ class SqliteSet(SqliteObject):
         for item in self:
             if item in other:
                 return False
+
         return True
 
     def issubset(self, other):
         for item in self:
             if item not in other:
                 return False
+
         return True
 
     def __le__(self, other):
@@ -111,6 +119,7 @@ class SqliteSet(SqliteObject):
         for item in other:
             if item not in self:
                 return False
+
         return True
 
     def __ge__(self, other):
@@ -141,6 +150,7 @@ class SqliteSet(SqliteObject):
         with self.lock:
             outfile.write(u"[")
             iterator = iter(self)
+
             try:
                 try:
                     this = iterator.__next__()
@@ -152,6 +162,7 @@ class SqliteSet(SqliteObject):
             else:
                 while True:
                     outfile.write(unicode(json.dumps(this)))
+
                     try:
                         try:
                             this = iterator.__next__()
@@ -177,6 +188,7 @@ class SqliteSet(SqliteObject):
                 while True:
                     outfile.write(unicode(coder(this)))
                     outfile.write(unicode(separator))
+
                     try:
                         try:
                             this = iterator.__next__()

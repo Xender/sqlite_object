@@ -6,6 +6,7 @@ try:
 except NameError:
     unicode = str
 
+
 class SqliteDict(SqliteObject):
     """
     Dict-like object backed by an sqlite db.
@@ -25,10 +26,9 @@ class SqliteDict(SqliteObject):
     __schema = '''CREATE TABLE IF NOT EXISTS dict (key TEXT PRIMARY KEY, value TEXT)'''
     __index = '''CREATE INDEX IF NOT EXISTS dict_index ON dict (key)'''
 
-
-
     def __init__(self, init_dict={}, filename=None, coder=json.dumps, decoder=json.loads, index=True, persist=False, commit_every=0):
         super(SqliteDict, self).__init__(self.__schema, self.__index, filename or str(uuid.uuid4())+".sqlite3", coder, decoder, index=index, persist=persist, commit_every=commit_every)
+
         for key, value in init_dict.items():
             self[key] = value
 
@@ -46,6 +46,7 @@ class SqliteDict(SqliteObject):
                 with self._closeable_cursor() as cursor:
                     cursor.execute('''SELECT value FROM dict WHERE key = ?''', (self._coder(key), ))
                     row = cursor.fetchone()
+
                     if row != None:
                         return self._decoder(row[0])
                     else:
@@ -58,6 +59,7 @@ class SqliteDict(SqliteObject):
             else:
                 with self._closeable_cursor() as cursor:
                     cursor.execute('''REPLACE INTO dict (key, value) VALUES (?, ?)''', (self._coder(key), self._coder(value)))
+
             self._do_write()
 
     def __delitem__(self, key):
@@ -67,6 +69,7 @@ class SqliteDict(SqliteObject):
             else:
                 with self._closeable_cursor() as cursor:
                     cursor.execute('''DELETE FROM dict WHERE key = ?''', (self._coder(key),) )
+
             self._do_write()
 
     def __iter__(self):
@@ -108,6 +111,7 @@ class SqliteDict(SqliteObject):
             with self._closeable_cursor() as cursor:
                 cursor.execute('''SELECT key, value FROM dict LIMIT 1''')
                 row = cursor.fetchone()
+
                 if row ==  None:
                     raise KeyError("Dict has no more items to pop")
                 else:
@@ -115,6 +119,7 @@ class SqliteDict(SqliteObject):
                     value = self._decoder(row[1])
                     del self[key]
                     return (key, value)
+
             self._do_write()
 
     def setdefault(self, key, default=None):
@@ -124,6 +129,7 @@ class SqliteDict(SqliteObject):
             except KeyError:
                 self[key] = default
                 return default
+
             self._do_write()
 
     def update(self, other=None, **kwargs):
@@ -147,6 +153,7 @@ class SqliteDict(SqliteObject):
             with self._sq_dict._closeable_cursor() as cursor:
                 cursor.execute('''SELECT * FROM dict WHERE key = ? AND value = ?''', (self._sq_dict._coder(key), self._sq_dict._coder(value)))
                 val = cursor.fetchone()
+
                 if val == None:
                     return False
                 else:
@@ -165,6 +172,7 @@ class SqliteDict(SqliteObject):
             with self._sq_dict._closeable_cursor() as cursor:
                 cursor.execute('''SELECT * FROM dict WHERE key = ? ''', (self._sq_dict._coder(key), ))
                 val = cursor.fetchone()
+
                 if val == None:
                     return False
                 else:
@@ -183,6 +191,7 @@ class SqliteDict(SqliteObject):
             with self._sq_dict._closeable_cursor() as cursor:
                 cursor.execute('''SELECT * FROM dict WHERE value = ? ''', (self._sq_dict._coder(value), ))
                 val = cursor.fetchone()
+
                 if val == None:
                     return False
                 else:

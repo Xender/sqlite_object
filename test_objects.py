@@ -1,5 +1,6 @@
 from __future__ import print_function
 from sqlite_object import SqliteList, SqliteDict, SqliteSet
+
 try:
     from io import StringIO
 except:
@@ -8,7 +9,6 @@ except:
 import json
 
 import unittest, os
-
 
 
 class TestSqliteObjects(unittest.TestCase):
