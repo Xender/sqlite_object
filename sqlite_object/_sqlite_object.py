@@ -4,7 +4,6 @@ from threading import RLock
 
 
 class SqliteObject(object):
-    _commit_counter = 0
     lock = RLock()
 
     def is_open(self):
@@ -17,6 +16,8 @@ class SqliteObject(object):
         self._db = sqlite3.connect(filename)
         self._persist = persist
         self._filename = filename
+
+        self._commit_counter = 0
 
         with self.lock:
             with self._closeable_cursor() as cursor:
