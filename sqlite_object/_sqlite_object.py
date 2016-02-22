@@ -1,4 +1,4 @@
-import sqlite3, os
+import sqlite3, os, uuid
 
 from threading import RLock
 
@@ -11,6 +11,9 @@ class SqliteObject(object):
         return self._is_open
 
     def __init__(self, schema, index_command, filename, coder, decoder, index=True, persist=False, commit_every=0):
+        if not filename:
+            filename = str(uuid.uuid4())+".sqlite3"
+
         self._db = sqlite3.connect(filename)
         self._persist = persist
         self._filename = filename

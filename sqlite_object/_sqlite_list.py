@@ -1,5 +1,5 @@
 from ._sqlite_object import SqliteObject
-import json, uuid
+import json
 
 """
 from sqlite_object import  SqliteList
@@ -47,7 +47,7 @@ class SqliteList(SqliteObject):
         super(SqliteList, self).__init__(
             self.__schema,
             self.__index,
-            filename or str(uuid.uuid4())+".sqlite3",
+            filename,
             coder,
             decoder,
             index=index,

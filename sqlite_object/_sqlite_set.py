@@ -1,4 +1,4 @@
-import json, uuid
+import json
 from ._sqlite_object import SqliteObject
 
 try:
@@ -23,7 +23,7 @@ class SqliteSet(SqliteObject):
         super(SqliteSet, self).__init__(
             self.__schema,
             self.__index,
-            filename or str(uuid.uuid4())+".sqlite3",
+            filename,
             coder,
             decoder,
             index=index,
