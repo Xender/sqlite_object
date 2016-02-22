@@ -23,8 +23,8 @@ class SqliteDict(SqliteObject):
     - update(<another dict or list like [(key, value),]>)
     - pop() and popitem()
     """
-    __schema = '''CREATE TABLE IF NOT EXISTS dict (key TEXT PRIMARY KEY, value TEXT)'''
-    __index = '''CREATE INDEX IF NOT EXISTS dict_index ON dict (key)'''
+    __schema = '''CREATE TABLE IF NOT EXISTS "{table_name}" (key TEXT PRIMARY KEY, value TEXT)'''
+    __index = '''CREATE INDEX IF NOT EXISTS "{index_name}" ON "{table_name}" (key)'''
 
     def __init__(self,
         init_dict={},
@@ -33,11 +33,24 @@ class SqliteDict(SqliteObject):
         decoder=json.loads,
         index=True,
         persist=False,
-        commit_every=0
+        commit_every=0,
+        name=None,
+        table_name_fmt='{name}_dict_table',
+        index_name_fmt='{name}_dict_index',
     ):
+        if not name:  # Compat
+            self.table_name = 'dict'
+            self.index_name = 'dict_index'
+        else:
+            self.table_name = table_name_fmt.format(name=name)
+            self.index_name = index_name_fmt.format(name=name)
+
+        schema_ddl = self.__schema.format( table_name=self.table_name )
+        index_ddl  = self.__index.format(  table_name=self.table_name, index_name=self.index_name )
+
         super(SqliteDict, self).__init__(
-            self.__schema,
-            self.__index,
+            schema_ddl,
+            index_ddl,
             filename,
             coder,
             decoder,

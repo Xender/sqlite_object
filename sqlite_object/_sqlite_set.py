@@ -8,8 +8,8 @@ except NameError:
 
 
 class SqliteSet(SqliteObject):
-    __schema = '''CREATE TABLE IF NOT EXISTS set_table (key TEXT PRIMARY KEY)'''
-    __index = '''CREATE INDEX IF NOT EXISTS set_index ON set_table (key)'''
+    __schema = '''CREATE TABLE IF NOT EXISTS "{table_name}" (key TEXT PRIMARY KEY)'''
+    __index = '''CREATE INDEX IF NOT EXISTS "{index_name}" ON "{table_name}" (key)'''
 
     def __init__(self,
         init_set=[],
@@ -18,11 +18,24 @@ class SqliteSet(SqliteObject):
         decoder=json.loads,
         index=True,
         persist=False,
-        commit_every=0
+        commit_every=0,
+        name=None,
+        table_name_fmt='{name}_set_table',
+        index_name_fmt='{name}_set_index',
     ):
+        if not name:  # Compat
+            self.table_name = 'set_table'
+            self.index_name = 'set_table'
+        else:
+            self.table_name = table_name_fmt.format(name=name)
+            self.index_name = index_name_fmt.format(name=name)
+
+        schema_ddl = self.__schema.format( table_name=self.table_name )
+        index_ddl  = self.__index.format(  table_name=self.table_name, index_name=self.index_name )
+
         super(SqliteSet, self).__init__(
-            self.__schema,
-            self.__index,
+            schema_ddl,
+            index_ddl,
             filename,
             coder,
             decoder,
