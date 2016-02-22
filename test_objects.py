@@ -3,7 +3,7 @@ from sqlite_object import SqliteList, SqliteDict, SqliteSet
 
 try:
     from io import StringIO
-except:
+except ImportError:
     from StringIO import StringIO
 
 import json
