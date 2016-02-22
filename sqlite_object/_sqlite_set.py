@@ -2,7 +2,7 @@ import json, uuid
 from ._sqlite_object import SqliteObject
 
 try:
-    unicode("hello")
+    unicode
 except NameError:
     unicode = str
 

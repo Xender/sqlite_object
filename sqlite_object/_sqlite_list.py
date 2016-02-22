@@ -9,7 +9,7 @@ l.append("another one!")
 """
 
 try:
-    unicode("hello")
+    unicode
 except NameError:
     unicode = str
 
