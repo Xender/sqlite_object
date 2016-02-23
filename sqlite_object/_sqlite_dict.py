@@ -47,7 +47,7 @@ class SqliteDict(SqliteObject):
                     cursor.execute('''SELECT value FROM dict WHERE key = ?''', (self._coder(key), ))
                     row = cursor.fetchone()
 
-                    if row != None:
+                    if row is not None:
                         return self._decoder(row[0])
                     else:
                         raise KeyError("Mapping key not found in dict")
@@ -112,7 +112,7 @@ class SqliteDict(SqliteObject):
                 cursor.execute('''SELECT key, value FROM dict LIMIT 1''')
                 row = cursor.fetchone()
 
-                if row ==  None:
+                if row is None:
                     raise KeyError("Dict has no more items to pop")
                 else:
                     key = self._decoder(row[0])
@@ -154,7 +154,7 @@ class SqliteDict(SqliteObject):
                 cursor.execute('''SELECT * FROM dict WHERE key = ? AND value = ?''', (self._sq_dict._coder(key), self._sq_dict._coder(value)))
                 val = cursor.fetchone()
 
-                if val == None:
+                if val is None:
                     return False
                 else:
                     return True
@@ -173,7 +173,7 @@ class SqliteDict(SqliteObject):
                 cursor.execute('''SELECT * FROM dict WHERE key = ? ''', (self._sq_dict._coder(key), ))
                 val = cursor.fetchone()
 
-                if val == None:
+                if val is None:
                     return False
                 else:
                     return True
@@ -192,7 +192,7 @@ class SqliteDict(SqliteObject):
                 cursor.execute('''SELECT * FROM dict WHERE value = ? ''', (self._sq_dict._coder(value), ))
                 val = cursor.fetchone()
 
-                if val == None:
+                if val is None:
                     return False
                 else:
                     return True

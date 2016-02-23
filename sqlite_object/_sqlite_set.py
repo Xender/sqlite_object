@@ -23,7 +23,7 @@ class SqliteSet(SqliteObject):
 
     def _has(self, cursor, item):
         rows = cursor.execute('''SELECT key FROM set_table WHERE key = ?''', (self._coder(item), ))
-        if rows.fetchone() != None:
+        if rows.fetchone() is not None:
             return True
         else:
             return False
@@ -85,7 +85,7 @@ class SqliteSet(SqliteObject):
                 rows = cursor.execute('''SELECT key FROM set_table LIMIT 1''')
                 row = rows.fetchone()
 
-                if row == None:
+                if row is None:
                     raise KeyError("Tried to pop empty set_table")
 
                 self._discard(cursor, self._decoder(row[0]))
