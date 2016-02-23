@@ -65,7 +65,10 @@ class SqliteDict(SqliteObject):
     def __len__(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                for row in cursor.execute('''SELECT COUNT(*) FROM dict'''):
+                for row in cursor.execute(
+                    '''SELECT COUNT(*) FROM "{table_name}"'''
+                        .format(table_name=self.table_name)
+                ):
                     return row[0]
 
     def __getitem__(self, key):
@@ -74,7 +77,10 @@ class SqliteDict(SqliteObject):
                 raise KeyError("Slices not allowed in SqliteDict")
             else:
                 with self._closeable_cursor() as cursor:
-                    cursor.execute('''SELECT value FROM dict WHERE key = ?''', (self._coder(key), ))
+                    cursor.execute(
+                        '''SELECT value FROM "{table_name}" WHERE key = ?'''
+                            .format(table_name=self.table_name), (self._coder(key), )
+                    )
                     row = cursor.fetchone()
 
                     if row is not None:
@@ -88,7 +94,10 @@ class SqliteDict(SqliteObject):
                 raise KeyError("Slices not allowed in SqliteDict")
             else:
                 with self._closeable_cursor() as cursor:
-                    cursor.execute('''REPLACE INTO dict (key, value) VALUES (?, ?)''', (self._coder(key), self._coder(value)))
+                    cursor.execute(
+                        '''REPLACE INTO "{table_name}" (key, value) VALUES (?, ?)'''
+                            .format(table_name=self.table_name), (self._coder(key), self._coder(value))
+                    )
 
             self._do_write()
 
@@ -98,14 +107,21 @@ class SqliteDict(SqliteObject):
                 raise KeyError("Slices not allowed in SqliteDict")
             else:
                 with self._closeable_cursor() as cursor:
-                    cursor.execute('''DELETE FROM dict WHERE key = ?''', (self._coder(key),) )
+                    cursor.execute(
+                        '''DELETE FROM "{table_name}" WHERE key = ?'''
+                            .format(table_name=self.table_name),
+                        (self._coder(key),)
+                    )
 
             self._do_write()
 
     def __iter__(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                for row in cursor.execute('''SELECT key FROM dict'''):
+                for row in cursor.execute(
+                    '''SELECT key FROM "{table_name}"'''
+                        .format(table_name=self.table_name)
+                ):
                     yield self._decoder(row[0])
 
     def __contains__(self, key):
@@ -120,7 +136,10 @@ class SqliteDict(SqliteObject):
     def clear(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''DELETE FROM dict''')
+                cursor.execute(
+                    '''DELETE FROM "{table_name}"'''
+                        .format(table_name=self.table_name)
+                )
 
     def get(self, key, default=None):
         with self.lock:
@@ -139,7 +158,10 @@ class SqliteDict(SqliteObject):
     def popitem(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''SELECT key, value FROM dict LIMIT 1''')
+                cursor.execute(
+                    '''SELECT key, value FROM "{table_name}" LIMIT 1'''
+                        .format(table_name=self.table_name)
+                )
                 row = cursor.fetchone()
 
                 if row is None:
@@ -179,9 +201,15 @@ class SqliteDict(SqliteObject):
             self._sq_dict = sq_dict
 
         def __contains__(self, item):
+            sq_dict = self._sq_dict
+
             key, value = item
-            with self._sq_dict._closeable_cursor() as cursor:
-                cursor.execute('''SELECT * FROM dict WHERE key = ? AND value = ?''', (self._sq_dict._coder(key), self._sq_dict._coder(value)))
+            with sq_dict._closeable_cursor() as cursor:
+                cursor.execute(
+                    '''SELECT * FROM "{table_name}" WHERE key = ? AND value = ?'''
+                        .format(table_name=sq_dict.table_name),
+                    (sq_dict._coder(key), sq_dict._coder(value))
+                )
                 val = cursor.fetchone()
 
                 if val is None:
@@ -190,17 +218,28 @@ class SqliteDict(SqliteObject):
                     return True
 
         def __iter__(self):
-            with self._sq_dict._closeable_cursor() as cursor:
-                for row in cursor.execute('''SELECT key, value FROM dict'''):
-                    yield self._sq_dict._decoder(row[0]), self._sq_dict._decoder(row[1])
+            sq_dict = self._sq_dict
+
+            with sq_dict._closeable_cursor() as cursor:
+                for row in cursor.execute(
+                    '''SELECT key, value FROM "{table_name}"'''
+                        .format(table_name=sq_dict.table_name)
+                ):
+                    yield sq_dict._decoder(row[0]), sq_dict._decoder(row[1])
 
     class KeyView(object):
         def __init__(self, sq_dict):
             self._sq_dict = sq_dict
 
         def __contains__(self, key):
-            with self._sq_dict._closeable_cursor() as cursor:
-                cursor.execute('''SELECT * FROM dict WHERE key = ? ''', (self._sq_dict._coder(key), ))
+            sq_dict = self._sq_dict
+
+            with sq_dict._closeable_cursor() as cursor:
+                cursor.execute(
+                    '''SELECT * FROM "{table_name}" WHERE key = ? '''
+                        .format(table_name=sq_dict.table_name),
+                    (sq_dict._coder(key), )
+                )
                 val = cursor.fetchone()
 
                 if val is None:
@@ -209,25 +248,41 @@ class SqliteDict(SqliteObject):
                     return True
 
         def __iter__(self):
-            with self._sq_dict._closeable_cursor() as cursor:
-                for row in cursor.execute('''SELECT key FROM dict'''):
-                    yield self._sq_dict._decoder(row[0])
+            sq_dict = self._sq_dict
+
+            with sq_dict._closeable_cursor() as cursor:
+                for row in cursor.execute(
+                    '''SELECT key FROM "{table_name}"'''
+                        .format(table_name=sq_dict.table_name)
+                ):
+                    yield sq_dict._decoder(row[0])
 
     class ValueView(object):
         def __init__(self, sq_dict):
             self._sq_dict = sq_dict
 
         def __contains__(self, value):
-            with self._sq_dict._closeable_cursor() as cursor:
-                cursor.execute('''SELECT * FROM dict WHERE value = ? ''', (self._sq_dict._coder(value), ))
+            sq_dict = self._sq_dict
+
+            with sq_dict._closeable_cursor() as cursor:
+                cursor.execute(
+                    '''SELECT * FROM "{table_name}" WHERE value = ? '''
+                        .format(table_name=sq_dict.table_name),
+                    (sq_dict._coder(value), )
+                )
                 val = cursor.fetchone()
 
                 return val is not None
 
         def __iter__(self):
-            with self._sq_dict._closeable_cursor() as cursor:
-                for row in cursor.execute('''SELECT value FROM dict'''):
-                    yield self._sq_dict._decoder(row[0])
+            sq_dict = self._sq_dict
+
+            with sq_dict._closeable_cursor() as cursor:
+                for row in cursor.execute(
+                    '''SELECT value FROM "{table_name}"'''
+                        .format(table_name=sq_dict.table_name)
+                ):
+                    yield sq_dict._decoder(row[0])
 
     def items(self):
         return self.ItemView(self)

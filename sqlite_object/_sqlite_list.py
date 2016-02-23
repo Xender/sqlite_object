@@ -72,19 +72,32 @@ class SqliteList(SqliteObject):
             self.append(item)
 
     def _getlen(self, cursor):
-        for row in cursor.execute('''SELECT COUNT(*) FROM list'''):
+        for row in cursor.execute(
+            '''SELECT COUNT(*) FROM "{table_name}"'''
+                .format(table_name=self.table_name)
+        ):
             return row[0]
 
     def _getmin(self, cursor):
-        for row in cursor.execute('''SELECT MIN(list_index) FROM list'''):
+        for row in cursor.execute(
+            '''SELECT MIN(list_index) FROM "{table_name}"'''
+                .format(table_name=self.table_name)
+        ):
             return row[0]
 
     def _getmax(self, cursor):
-        for row in cursor.execute('''SELECT MAX(list_index) FROM list'''):
+        for row in cursor.execute(
+            '''SELECT MAX(list_index) FROM "{table_name}"'''
+                .format(table_name=self.table_name)
+        ):
             return row[0]
 
     def _getitem(self, cursor, item):
-        for row in cursor.execute('''SELECT value FROM list WHERE list_index = (SELECT MIN(list_index) FROM list) + ?''', (item, )):
+        for row in cursor.execute(
+            '''SELECT value FROM "{table_name}" WHERE list_index = (SELECT MIN(list_index) FROM "{table_name}") + ?'''
+                .format(table_name=self.table_name),
+            (item, )
+        ):
             return self._decoder(row[0])
 
     def __len__(self):
@@ -96,7 +109,10 @@ class SqliteList(SqliteObject):
         with self.lock:
             #find the lowest index
             with self._closeable_cursor() as cursor:
-                for row in cursor.execute('''SELECT MIN(list_index) FROM list'''):
+                for row in cursor.execute(
+                    '''SELECT MIN(list_index) FROM "{table_name}"'''
+                        .format(table_name=self.table_name)
+                ):
                     return row[0]
 
             #if there's nothing in the list, return 0
@@ -141,7 +157,11 @@ class SqliteList(SqliteObject):
                         if key < 0:
                             raise IndexError("Sequence index out of range.")
 
-                    cursor.execute('''SELECT value FROM list WHERE list_index = (SELECT MIN(list_index) FROM list) + ?''', (key, ))
+                    cursor.execute(
+                        '''SELECT value FROM "{table_name}" WHERE list_index = (SELECT MIN(list_index) FROM "{table_name}") + ?'''
+                            .format(table_name=self.table_name),
+                        (key, )
+                    )
                     return self._decoder(cursor.fetchone()[0])
 
     def __setitem__(self, key, value):
@@ -158,14 +178,21 @@ class SqliteList(SqliteObject):
                 if key >= len(self):
                     raise IndexError("Sequence index out of range.")
 
-                cursor.execute('''REPLACE INTO list (list_index, value) VALUES ((SELECT MIN(list_index) FROM list) + ?, ?)''', (key, self._coder(value)))
+                cursor.execute(
+                    '''REPLACE INTO list (list_index, value) VALUES ((SELECT MIN(list_index) FROM "{table_name}") + ?, ?)'''
+                        .format(table_name=self.table_name),
+                    (key, self._coder(value))
+                )
 
             self._do_write()
 
     def __iter__(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''SELECT value FROM list ORDER BY list_index ASC''')
+                cursor.execute(
+                    '''SELECT value FROM "{table_name}" ORDER BY list_index ASC'''
+                        .format(table_name=self.table_name)
+                )
 
                 for row in cursor:
                     yield self._decoder(row[0])
@@ -173,7 +200,10 @@ class SqliteList(SqliteObject):
     def __reversed__(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''SELECT value FROM list ORDER BY list_index DESC''')
+                cursor.execute(
+                    '''SELECT value FROM "{table_name}" ORDER BY list_index DESC'''
+                        .format(table_name=self.table_name)
+                )
 
                 for row in cursor:
                     yield self._decoder(row[0])
@@ -181,7 +211,10 @@ class SqliteList(SqliteObject):
     def __contains__(self, item):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''SELECT list_index FROM list WHERE value = ?''', (self._coder(item), ))
+                cursor.execute(
+                    '''SELECT list_index FROM "{table_name}" WHERE value = ?'''
+                        .format(table_name=self.table_name), (self._coder(item), )
+                )
 
                 return cursor.fetchone() is not None
 
@@ -191,7 +224,11 @@ class SqliteList(SqliteObject):
         """
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''INSERT INTO list (list_index, value) VALUES ((SELECT MAX(list_index) FROM list) + 1, ?)''', (self._coder(item), ) )
+                cursor.execute(
+                    '''INSERT INTO "{table_name}" (list_index, value) VALUES ((SELECT MAX(list_index) FROM "{table_name}") + 1, ?)'''
+                        .format(table_name=self.table_name),
+                    (self._coder(item), )
+                )
 
             self._do_write()
 
@@ -201,7 +238,11 @@ class SqliteList(SqliteObject):
         """
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''INSERT INTO list (list_index, value) VALUES ((SELECT MIN(list_index) FROM list) - 1, ?)''', ( self._coder(item), ) )
+                cursor.execute(
+                    '''INSERT INTO "{table_name}" (list_index, value) VALUES ((SELECT MIN(list_index) FROM "{table_name}") - 1, ?)'''
+                        .format(table_name=self.table_name),
+                    ( self._coder(item), )
+                )
 
             self._do_write()
 
@@ -216,9 +257,16 @@ class SqliteList(SqliteObject):
                     cusror.execute('''END TRANSACTION''')
                     raise IndexError("pop from empty list")
 
-                cursor.execute('''SELECT value FROM list WHERE list_index = (SELECT MAX(list_index) FROM list)''')
+                cursor.execute(
+                    '''SELECT value FROM "{table_name}" WHERE list_index = (SELECT MAX(list_index) FROM "{table_name}")'''
+                        .format(table_name=self.table_name)
+                )
                 output = self._decoder( cursor.fetchone()[0] )
-                cursor.execute('''DELETE FROM list WHERE list_index = (SELECT MAX(list_index) FROM list)''')
+
+                cursor.execute(
+                    '''DELETE FROM "{table_name}" WHERE list_index = (SELECT MAX(list_index) FROM "{table_name}")'''
+                        .format(table_name=self.table_name)
+                )
 
                 self._db.commit()
 
@@ -236,9 +284,16 @@ class SqliteList(SqliteObject):
                     cusror.execute('''END TRANSACTION''')
                     raise IndexError("pop from empty list")
 
-                cursor.execute('''SELECT value FROM list WHERE list_index = (SELECT MIN(list_index) FROM list)''')
+                cursor.execute(
+                    '''SELECT value FROM "{table_name}" WHERE list_index = (SELECT MIN(list_index) FROM "{table_name}")'''
+                        .format(table_name=self.table_name)
+                )
                 output = self._decoder(cursor.fetchone()[0])
-                cursor.execute('''DELETE FROM list WHERE list_index = (SELECT MIN(list_index) FROM list)''')
+
+                cursor.execute(
+                    '''DELETE FROM "{table_name}" WHERE list_index = (SELECT MIN(list_index) FROM "{table_name}")'''
+                        .format(table_name=self.table_name)
+                )
 
                 self._db.commit()
 
@@ -256,7 +311,10 @@ class SqliteList(SqliteObject):
     def clear(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''DELETE FROM list''')
+                cursor.execute(
+                    '''DELETE FROM "{table_name}"'''
+                        .format(table_name=self.table_name)
+                )
 
     def write(self, outfile):
         with self.lock:

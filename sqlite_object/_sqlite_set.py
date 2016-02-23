@@ -48,24 +48,39 @@ class SqliteSet(SqliteObject):
             self.add(item)
 
     def _getlen(self, cursor):
-        for row in cursor.execute('''SELECT COUNT(*) FROM set_table'''):
+        for row in cursor.execute(
+            '''SELECT COUNT(*) FROM "{table_name}"'''
+                .format(table_name=self.table_name)
+        ):
             return row[0]
 
     def _has(self, cursor, item):
-        rows = cursor.execute('''SELECT key FROM set_table WHERE key = ?''', (self._coder(item), ))
+        rows = cursor.execute(
+            '''SELECT key FROM "{table_name}" WHERE key = ?'''
+                .format(table_name=self.table_name),
+            (self._coder(item), )
+        )
         return rows.fetchone() is not None
 
     def _remove(self, cursor, item):
         if self._has(cursor, item):
             self._discard(cursor, item)
         else:
-            raise KeyError("Item not in set_table")
+            raise KeyError("Item not in \"{table_name}\"".format(self.table_name))
 
     def _discard(self, cursor, item):
-        cursor.execute('''DELETE FROM set_table WHERE key = ?''', (self._coder(item), ))
+        cursor.execute(
+            '''DELETE FROM "{table_name}" WHERE key = ?'''
+                .format(table_name=self.table_name),
+            (self._coder(item), )
+        )
 
     def _add(self, cursor, item):
-        cursor.execute('''INSERT OR IGNORE INTO set_table (key) VALUES (?)''', (self._coder(item), ))
+        cursor.execute(
+            '''INSERT OR IGNORE INTO "{table_name}" (key) VALUES (?)'''
+                .format(table_name=self.table_name),
+            (self._coder(item), )
+        )
 
     def __len__(self):
         with self.lock:
@@ -80,7 +95,10 @@ class SqliteSet(SqliteObject):
     def __iter__(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                for row in cursor.execute('''SELECT key FROM set_table'''):
+                for row in cursor.execute(
+                    '''SELECT key FROM "{table_name}"'''
+                        .format(table_name=self.table_name)
+                ):
                     yield self._decoder(row[0])
 
     def add(self, item):
@@ -109,7 +127,10 @@ class SqliteSet(SqliteObject):
 
         with self.lock:
             with self._closeable_cursor() as cursor:
-                rows = cursor.execute('''SELECT key FROM set_table LIMIT 1''')
+                rows = cursor.execute(
+                    '''SELECT key FROM "{table_name}" LIMIT 1'''
+                        .format(table_name=self.table_name)
+                )
                 row = rows.fetchone()
 
                 if row is None:
@@ -170,7 +191,10 @@ class SqliteSet(SqliteObject):
     def clear(self):
         with self.lock:
             with self._closeable_cursor() as cursor:
-                cursor.execute('''DELETE FROM set_table''')
+                cursor.execute(
+                    '''DELETE FROM "{table_name}"'''
+                        .format(table_name=self.table_name)
+                )
 
     def write(self, outfile):
         with self.lock:
