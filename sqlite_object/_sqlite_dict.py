@@ -192,10 +192,7 @@ class SqliteDict(SqliteObject):
                 cursor.execute('''SELECT * FROM dict WHERE value = ? ''', (self._sq_dict._coder(value), ))
                 val = cursor.fetchone()
 
-                if val is None:
-                    return False
-                else:
-                    return True
+                return val is not None
 
         def __iter__(self):
             with self._sq_dict._closeable_cursor() as cursor:

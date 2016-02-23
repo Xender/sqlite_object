@@ -23,10 +23,7 @@ class SqliteSet(SqliteObject):
 
     def _has(self, cursor, item):
         rows = cursor.execute('''SELECT key FROM set_table WHERE key = ?''', (self._coder(item), ))
-        if rows.fetchone() is not None:
-            return True
-        else:
-            return False
+        return rows.fetchone() is not None
 
     def _remove(self, cursor, item):
         if self._has(cursor, item):

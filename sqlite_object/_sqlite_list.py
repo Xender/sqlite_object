@@ -153,10 +153,7 @@ class SqliteList(SqliteObject):
             with self._closeable_cursor() as cursor:
                 cursor.execute('''SELECT list_index FROM list WHERE value = ?''', (self._coder(item), ))
 
-                if cursor.fetchone() is not None:
-                    return True
-                else:
-                    return False
+                return cursor.fetchone() is not None
 
     def append(self, item):
         """
