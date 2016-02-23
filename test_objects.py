@@ -71,8 +71,8 @@ class TestSqliteObjects(unittest.TestCase):
         l = SqliteList()
         self.run_list_tests(l)
 
-        #make sure it still works when you turn off indexing
-        l = SqliteList(index=False)
+        #now with value indexing
+        l = SqliteList(index_values=True)
         self.run_list_tests(l)
 
         #test initializer
@@ -160,7 +160,7 @@ class TestSqliteObjects(unittest.TestCase):
         d = SqliteDict()
         self.run_dict_tests( d)
 
-        d = SqliteDict(index=False)
+        d = SqliteDict(index_values=True)
         self.run_dict_tests(d)
         d["extra"] = "item"
 
@@ -239,9 +239,6 @@ class TestSqliteObjects(unittest.TestCase):
 
     def test_set(self):
         s = SqliteSet()
-        self.run_set_tests(s)
-
-        s = SqliteSet(index=False)
         self.run_set_tests(s)
 
         s = SqliteSet({1, 2, 3})

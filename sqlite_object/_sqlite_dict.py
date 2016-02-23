@@ -24,14 +24,14 @@ class SqliteDict(SqliteObject):
     - pop() and popitem()
     """
     __schema = '''CREATE TABLE IF NOT EXISTS "{table_name}" (key TEXT PRIMARY KEY, value TEXT)'''
-    __index = '''CREATE INDEX IF NOT EXISTS "{index_name}" ON "{table_name}" (key)'''
+    __index = '''CREATE INDEX IF NOT EXISTS "{index_name}" ON "{table_name}" (value)'''
 
     def __init__(self,
         init_dict={},
         filename=None,
         coder=json.dumps,
         decoder=json.loads,
-        index=True,
+        index_values=False,
         persist=False,
         commit_every=0,
         name=None,
@@ -54,7 +54,7 @@ class SqliteDict(SqliteObject):
             filename,
             coder,
             decoder,
-            index=index,
+            index=index_values,
             persist=persist,
             commit_every=commit_every
         )

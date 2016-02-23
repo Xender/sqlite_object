@@ -40,7 +40,7 @@ class SqliteList(SqliteObject):
         filename=None,
         coder=json.dumps,
         decoder=json.loads,
-        index=True,
+        index_values=False,
         persist=False,
         commit_every=0,
         name=None,
@@ -63,7 +63,7 @@ class SqliteList(SqliteObject):
             filename,
             coder,
             decoder,
-            index=index,
+            index=index_values,
             persist=persist,
             commit_every=commit_every
         )
